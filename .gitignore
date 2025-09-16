@@ -131,6 +131,9 @@ dist
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
+
+# .env
+.env
 !.yarn/sdks
 !.yarn/versions
 
