@@ -1,0 +1,136 @@
+import { ResponseApi } from "../shared/helpers/response-api";
+import { ValidateField } from "../shared/helpers/validate-field";
+import { UserModel } from "../types/user.model";
+import { User } from '../models/User';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import { UserEnum } from "../types/enum/user.enum";
+
+dotenv.config();
+
+export class UserService {
+
+    async register(data: UserModel): Promise<ResponseApi<UserModel>> {
+        const validate = new ValidateField(['name', 'email', 'password', 'confirmPassword'], data, UserEnum);
+        const validations = [
+            {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
+            {valid: validate.validateEmail('email'), message: 'E-mail inválido.'},
+            {valid: validate.validatePassword(8), message: 'A senha deve conter no mínimo 8 caracteres e, pelo menos, um número.'},
+            {valid: validate.comparePasswords(), message: 'As senhas não coincidem.'}
+        ];
+
+        for (const item of validations) {
+            if (!item.valid) {
+                return {
+                    status: 422,
+                    data: null,
+                    message: item.message,
+                    pagination: null
+                };
+            }
+        }
+
+        const hashPassword = await bcrypt.hash(data.password, 12);
+        const existingUser = await User.findOne({ email: data.email });
+        if (existingUser) {
+            return {
+                status: 409,
+                data: null,
+                message: 'Usuário já cadastrado.',
+                pagination: null
+            };
+        }
+
+        const user = {
+            name: data.name,
+            email: data.email,
+            password: hashPassword
+        }
+
+        try {
+            const newUser = await User.create(user);
+            return {
+                status: 201,
+                data: {name: newUser.name, email: newUser.email, id: newUser.id} as UserModel,
+                message: 'Usuário criado com sucesso.',
+                pagination: null
+            };
+        } catch (error) {
+            return {
+                status: 500,
+                data: null,
+                message: 'Erro ao criar o usuário.',
+                pagination: null
+            };
+        }
+    }
+
+    async login(data: UserModel): Promise<ResponseApi<UserModel>> {
+        const validate = new ValidateField(['email', 'password'], data, UserEnum);
+        const validations = [
+            {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
+            {valid: validate.validateEmail('email'), message: 'E-mail inválido.'},
+            {valid: validate.validatePassword(8), message: 'A senha deve conter no mínimo 8 caracteres e, pelo menos, um número.'},
+        ];
+
+        for (const item of validations) {
+            if (!item.valid) {
+                return {
+                    status: 422,
+                    data: null,
+                    message: item.message,
+                    pagination: null
+                };
+            }
+        }
+
+        const user = await User.findOne({ email: data.email });
+        if (!user) {
+            return {
+                status: 404,
+                data: null,
+                message: 'Usuário não encontrado.',
+                pagination: null
+            };
+        }
+
+        const match = await bcrypt.compare(data.password, user.password);
+        if (!match) {
+            return {
+                status: 401,
+                data: null,
+                message: 'Senha inválida.',
+                pagination: null
+            };
+        }
+
+        try {
+            const token = jwt.sign(
+                { id: user._id },
+                process.env.JWT_SECRET as string,
+                { expiresIn: '1h' }
+            );
+
+            return {
+                data: null,
+                token,
+                status: 200,
+                message: 'Login realizado com sucesso.',
+                pagination: null
+            };
+
+        } catch (error) {
+            return {
+                status: 500,
+                data: null,
+                message: 'Erro ao gerar o token.',
+                pagination: null
+            };
+        }
+
+        
+
+    }
+
+}
