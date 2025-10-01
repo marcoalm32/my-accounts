@@ -1,15 +1,18 @@
-export class ValidateField<T> {
+export class ValidateField<T extends Record<string, any>> {
 
     private fields: string[];
-    private body: any;
+    private body: T;
+    private enumObject: any;
 
-    constructor(fields: string[], body: any) {
+    constructor(fields: string[], body: T, enumObject: any) {
         this.fields = fields;
         this.body = body;
+        this.enumObject = enumObject;
     }
 
     public requiredField(): string {
-        return this.fields.find(field => !this.body[field]) || '';
+        const missingField = this.fields.find(field => !this.body[field]) || '';
+        return this.enumObject[missingField] || missingField;
     }
 
     public validateEmail(field: string): boolean {

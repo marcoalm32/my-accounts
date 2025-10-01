@@ -5,42 +5,42 @@ import { User } from '../models/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { UserEnum } from "../types/enum/user.enum";
 
 dotenv.config();
 
 export class UserService {
 
     async register(data: UserModel): Promise<ResponseApi<UserModel>> {
-        const validate = new ValidateField(['name', 'email', 'password'], data);
-        const missingField = validate.requiredField();
-        if (missingField) {
+        const validate = new ValidateField(['name', 'email', 'password', 'confirmPassword'], data, UserEnum);
+        const validations = [
+            {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
+            {valid: validate.validateEmail('email'), message: 'E-mail inválido.'},
+            {valid: validate.validatePassword(8), message: 'A senha deve conter no mínimo 8 caracteres e, pelo menos, um número.'},
+            {valid: validate.comparePasswords(), message: 'As senhas não coincidem.'}
+        ];
+
+        for (const item of validations) {
+            if (!item.valid) {
+                return {
+                    status: 422,
+                    data: null,
+                    message: item.message,
+                    pagination: null
+                };
+            }
+        }
+
+        const hashPassword = await bcrypt.hash(data.password, 12);
+        const existingUser = await User.findOne({ email: data.email });
+        if (existingUser) {
             return {
-                status: 422,
+                status: 409,
                 data: null,
-                message: `${missingField} é obrigatório.`,
+                message: 'Usuário já cadastrado.',
                 pagination: null
             };
         }
-
-        if (!validate.validateEmail('email')) {
-            return {
-                status: 422,
-                data: null,
-                message: 'E-mail inválido.',
-                pagination: null
-            };
-        }
-
-        if (!validate.validatePassword(8)) {
-            return {
-                status: 422,
-                data: null,
-                message: 'A senha deve conter no mínimo 8 caracteres e, pelo menos, um número.',
-                pagination: null
-            };
-        }
-
-        const hashPassword = await bcrypt.hash(data.password, 10);
 
         const user = {
             name: data.name,
@@ -50,10 +50,9 @@ export class UserService {
 
         try {
             const newUser = await User.create(user);
-            newUser.password = '';
             return {
                 status: 201,
-                data: newUser,
+                data: {name: newUser.name, email: newUser.email, id: newUser.id} as UserModel,
                 message: 'Usuário criado com sucesso.',
                 pagination: null
             };
@@ -68,24 +67,22 @@ export class UserService {
     }
 
     async login(data: UserModel): Promise<ResponseApi<UserModel>> {
-        const validate = new ValidateField(['email', 'password'], data);
-        const missingField = validate.requiredField();
-        if (missingField) {
-            return {
-                status: 422,
-                data: null,
-                message: `${missingField} é obrigatório.`,
-                pagination: null
-            };
-        }
+        const validate = new ValidateField(['email', 'password'], data, UserEnum);
+        const validations = [
+            {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
+            {valid: validate.validateEmail('email'), message: 'E-mail inválido.'},
+            {valid: validate.validatePassword(8), message: 'A senha deve conter no mínimo 8 caracteres e, pelo menos, um número.'},
+        ];
 
-        if (!validate.validateEmail('email')) {
-            return {
-                status: 422,
-                data: null,
-                message: 'E-mail inválido.',
-                pagination: null
-            };
+        for (const item of validations) {
+            if (!item.valid) {
+                return {
+                    status: 422,
+                    data: null,
+                    message: item.message,
+                    pagination: null
+                };
+            }
         }
 
         const user = await User.findOne({ email: data.email });
@@ -115,7 +112,6 @@ export class UserService {
                 { expiresIn: '1h' }
             );
 
-            user.password = '';
             return {
                 data: null,
                 token,

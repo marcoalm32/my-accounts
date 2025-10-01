@@ -11,32 +11,32 @@ export class UserController {
         this.userService = new UserService();
     }
 
-    async register(req: Request, res: Response): Promise<ResponseApi<UserModel> | void> {
-        const response = await this.userService.register(req.body)
-        .then((response) => {
+    async register(req: Request, res: Response): Promise<void> {
+        try {
+            const response = await this.userService.register(req.body);
             res.status(response.status).json(response);
-        }).catch((error) => {
+        } catch (error) {
             res.status(500).json({
                 status: 500,
                 data: null,
                 message: 'Erro interno do servidor.',
                 pagination: null
             });
-        });
+        }
     }
 
-    async login(req: Request, res: Response): Promise<ResponseApi<UserModel> | void> {
-        const response = await this.userService.login(req.body)
-        .then((response) => {
+    async login(req: Request, res: Response): Promise<void> {
+        try {
+            const response = await this.userService.login(req.body);
             res.status(response.status).json(response);
-        }).catch((error) => {
+        } catch (error) {
             res.status(500).json({
                 status: 500,
                 data: null,
                 message: 'Erro interno do servidor.',
                 pagination: null
             });
-        });
+        }
     }
 
 }

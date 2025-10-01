@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const PORT = process.env.DB_PORT;
+const PORT = process.env.DB_MONGO_PORT;
 const HOST = process.env.DB_HOST;
 const DB_NAME = process.env.DB_NAME
 
