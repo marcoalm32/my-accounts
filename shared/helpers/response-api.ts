@@ -4,7 +4,7 @@ export interface ResponseApi<T> {
     status: number;
     message: string;
     data: T | null;
-    pagination: Pagination | null;
+    pagination?: Pagination | null;
     token?: string;
 }
 
@@ -18,7 +18,7 @@ export const responseApi = <T>(
         message: message,
         status: status,
         data: data,
-        pagination: pagination,
-        ...(token && { token: token })
+        ...(pagination && {pagination}),
+        ...(token && { token })
     }
 }

@@ -9,8 +9,8 @@ const accountController = new AccountController(accountService);
 
 router.get('/', isAuthenticated, (req, res) => accountController.find(req, res));
 router.post('/', isAuthenticated, (req, res) => accountController.create(req, res));
-router.patch('/:id', isAuthenticated, (req, res) => accountController.update(req, res));
-router.delete('/:id', isAuthenticated, (req, res) => accountController.delete(req, res));
+router.patch('/update/:id', isAuthenticated, (req, res) => accountController.update(req, res));
+router.delete('/delete/:id', isAuthenticated, (req, res) => accountController.delete(req, res));
 router.get('/:id', isAuthenticated, (req, res) => accountController.findById(req, res));
 
 export default router;

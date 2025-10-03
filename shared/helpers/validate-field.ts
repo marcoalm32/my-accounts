@@ -1,3 +1,6 @@
+import moment from "moment";
+import "moment/locale/pt-br";
+
 export class ValidateField<T extends Record<string, any>> {
 
     private fields: string[];
@@ -29,5 +32,15 @@ export class ValidateField<T extends Record<string, any>> {
         const password = this.body['password'];
         const hasLetter = /[A-Za-z]/.test(password);
         return typeof password === 'string' && password.length >= minLength && hasLetter;
+    }
+
+    public validateDate(format: string, value: string): boolean {
+        return moment(value, format, true).locale('pt-br').isValid();
+    }
+
+    public totalInstallmentsValid(): boolean {
+        const installment = this.body['installment'];
+        const totalInstallments = this.body['totalInstallments'];
+        return installment <= totalInstallments;
     }
 }
