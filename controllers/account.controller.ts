@@ -60,7 +60,7 @@ export class AccountController {
     async update(req: Request, res: Response) {
         try {
             const response = await this.accountService.update(req.body, req);
-            res.status(200).json({
+            res.status(response.status).json({
                 status: response.status,
                 data: response.data,
                 message: response.message,
@@ -77,7 +77,7 @@ export class AccountController {
     async delete(req: Request, res: Response) {
         try {
             const response = await this.accountService.delete(req);
-            res.status(200).json({
+            res.status(response.status).json({
                 status: response.status,
                 data: response.data,
                 message: response.message,

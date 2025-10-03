@@ -160,7 +160,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
             }
         }
         try {
-            const updatedAccount = await Account.findByIdAndUpdate(
+            const updatedAccount = await Account.findOneAndUpdate(
                 { _id: id, userId: req.userId }, 
                 data,
                 { new: true }
