@@ -7,11 +7,11 @@ export class AccountController {
 
     async find(req: Request, res: Response): Promise<void> {
         try {
-            const response = await this.accountService.findAll(req.query);
-            res.status(200).json({
-                status: 200,
+            const response = await this.accountService.findAll(req);
+            res.status(response.status).json({
+                status: response.status,
                 data: response.data,
-                message: 'Contas listadas com sucesso.',
+                message: response.message,
                 pagination: response.pagination
             });
         } catch (error) {
@@ -25,11 +25,11 @@ export class AccountController {
 
     async findById(req: Request, res: Response): Promise<void> {
         try {
-            const response = await this.accountService.findById(req.params.id);
-            res.status(200).json({
-                status: 200,
+            const response = await this.accountService.findById(req);
+            res.status(response.status).json({
+                status: response.status,
                 data: response.data,
-                message: 'Conta encontrada com sucesso.',
+                message: response.message,
             });
         } catch (error) {
             res.status(500).json({
@@ -42,11 +42,11 @@ export class AccountController {
 
     async create(req: Request, res: Response) {
         try {
-            const response = await this.accountService.create(req.body);
-            res.status(201).json({
-                status: 201,
+            const response = await this.accountService.create(req.body, req);
+            res.status(response.status).json({
+                status: response.status,
                 data: response.data,
-                message: 'Conta criada com sucesso.',
+                message: response.message,
             });
         } catch (error) {
             res.status(500).json({
@@ -59,11 +59,11 @@ export class AccountController {
 
     async update(req: Request, res: Response) {
         try {
-            const response = await this.accountService.update(req.params.id, req.body);
+            const response = await this.accountService.update(req.body, req);
             res.status(200).json({
-                status: 200,
+                status: response.status,
                 data: response.data,
-                message: 'Conta atualizada com sucesso.',
+                message: response.message,
             });
         } catch (error) {
             res.status(500).json({
@@ -76,11 +76,11 @@ export class AccountController {
 
     async delete(req: Request, res: Response) {
         try {
-            const response = await this.accountService.delete(req.params.id);
+            const response = await this.accountService.delete(req);
             res.status(200).json({
-                status: 200,
+                status: response.status,
                 data: response.data,
-                message: 'Conta deletada com sucesso.',
+                message: response.message,
             });
         } catch (error) {
             res.status(500).json({

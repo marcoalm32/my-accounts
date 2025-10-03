@@ -26,7 +26,6 @@ export class UserService {
                     status: 422,
                     data: null,
                     message: item.message,
-                    pagination: null
                 };
             }
         }
@@ -38,7 +37,6 @@ export class UserService {
                 status: 409,
                 data: null,
                 message: 'Usuário já cadastrado.',
-                pagination: null
             };
         }
 
@@ -54,14 +52,12 @@ export class UserService {
                 status: 201,
                 data: {name: newUser.name, email: newUser.email, id: newUser.id} as UserModel,
                 message: 'Usuário criado com sucesso.',
-                pagination: null
             };
         } catch (error) {
             return {
                 status: 500,
                 data: null,
                 message: 'Erro ao criar o usuário.',
-                pagination: null
             };
         }
     }
@@ -80,7 +76,6 @@ export class UserService {
                     status: 422,
                     data: null,
                     message: item.message,
-                    pagination: null
                 };
             }
         }
@@ -91,7 +86,6 @@ export class UserService {
                 status: 404,
                 data: null,
                 message: 'Usuário não encontrado.',
-                pagination: null
             };
         }
 
@@ -101,7 +95,6 @@ export class UserService {
                 status: 401,
                 data: null,
                 message: 'Senha inválida.',
-                pagination: null
             };
         }
 
@@ -117,7 +110,6 @@ export class UserService {
                 token,
                 status: 200,
                 message: 'Login realizado com sucesso.',
-                pagination: null
             };
 
         } catch (error) {
@@ -125,7 +117,6 @@ export class UserService {
                 status: 500,
                 data: null,
                 message: 'Erro ao gerar o token.',
-                pagination: null
             };
         }
 

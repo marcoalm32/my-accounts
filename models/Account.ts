@@ -3,13 +3,13 @@ import { AccountModel } from '../types/account.model';
 import { connectDatabase } from "../db/database";
 
 const accountSchema: Schema = new Schema<AccountModel>({
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name: { type: String, required: true },
     value: { type: Number, required: true },
     dueDate: { type: Date, required: true },
+    paymentDate: { type: Date, required: true },
+    reference: { type: String, required: true },
     installment: { type: Number, required: true },
-    totalInstallments: { type: Number, required: true },
-    paid: { type: Boolean, default: false },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 }, {timestamps: true});
 
 async function startServer() {

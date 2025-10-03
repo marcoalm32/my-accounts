@@ -40,7 +40,7 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
 
     const user = await getUserById(token);
     if (!user) {
-        res.status(401).json({ message: 'Token inválido.' });
+        res.status(401).json({ message: 'Acesso negado! Token inválido.' });
         return false;
     }
 
