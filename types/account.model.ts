@@ -1,4 +1,5 @@
 import { Default } from "./default";
+import { AccountTypeModel } from "../types/account-type.model";
 
 export interface AccountModel extends Default {
     name: string;
@@ -6,6 +7,7 @@ export interface AccountModel extends Default {
     paymentDate: Date;
     value: number;
     reference: string;
-    installment: number;
     userId: any;
+    accountType?: AccountTypeModel;
+    accountTypeId: any;
 }
