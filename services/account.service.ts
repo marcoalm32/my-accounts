@@ -1,58 +1,33 @@
 import { AbstractCRUD } from '../shared/abstract/abstract-crud';
 import { ResponseApi } from '../shared/helpers/response-api';
 import { AccountModel } from '../types/account.model';
-import { Pagination } from '../types/pagination';
 import { Account } from '../models/Account';
 import { AccountEnum } from '../types/enum/account.enum';
 import { ValidateField } from '../shared/helpers/validate-field';
 import { getToken, getUserById } from '../shared/middlewares/authenticated';
 import { Request } from 'express';
+import { AccountType } from '../models/AccountType';
+import moment from 'moment';
 
 export class AccountService extends AbstractCRUD<AccountModel> {
 
-    async create(data: AccountModel, req: Request): Promise<ResponseApi<AccountModel>> {
-        const validate = new ValidateField([
-            'name', 
-            'dueDate',
-            'value', 
-            'installment', 
-            'reference'
-        ], data, AccountEnum);
-        const validations = [
-            {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
-            {valid: validate.validateDate('MMMM/YYYY', data.reference), message: `Referência inválida. Use o formato "mês/ano".`},
-        ];
-
-        for (const v of validations) {
-            if (!v.valid) {
-                return {
-                    status: 422,
-                    data: null,
-                    message: v.message,
-                }
-            }
+    async create(data: AccountModel, req: Request): Promise<any> {
+        const dto = await this.createDto(data, req);
+        if (dto.status !== 200 || !dto.data) {
+            return dto;
         }
-
-        const userId = await this.getUser(req);
-        if (!userId) {
-            return {
-                status: 401,
-                data: null,
-                message: 'Usuário não autenticado.',
-            }
-        }
-
         try {
-            const account = new Account({
-                ...data,
-                userId: userId,
+            const newAccount = new Account({
+                ...dto.data,
+                userId: dto.data.userId,
+                accountType: dto.data.accountType,
             });
-            const newAccount = await account.save();
+            const savedAccount = await newAccount.save();
             return {
                 status: 201,
-                data: newAccount as AccountModel,
+                data: savedAccount as AccountModel,
                 message: 'Conta criada com sucesso.',
-            };
+            }
         } catch (error) {
             return {
                 status: 500,
@@ -94,26 +69,22 @@ export class AccountService extends AbstractCRUD<AccountModel> {
     async findAll(req: Request): Promise<ResponseApi<AccountModel[]>> {
         const skip = Number(req.query.skip) || 0;
         const limit = Number(req.query.limit) || 10;
+        const query = this.buildQueries(req.query);
+        const token = getToken(req);
+        const userId = await getUserById(token);
 
         try {
-            const accounts = await Account.find({ userId: req.userId })
+            const accounts = await Account.find({ userId, ...query.filter })
                 .skip(skip)
                 .limit(limit)
                 .exec();
-            const total = await Account.countDocuments({ userId: req.userId });
-
-            const pagination: Pagination = {
-                totalPages: Math.ceil(total / limit),
-                totalItems: total,
-                limit: limit,
-                page: Math.floor(skip / limit) + 1,
-            }
+            const total = await Account.countDocuments({ userId, ...query.filter });
 
             return {
                 status: 200,
                 data: accounts as AccountModel[],
                 message: 'Contas listadas com sucesso.',
-                pagination,
+                pagination: this.setPagination(total, limit, skip)
             }
 
         } catch (error) {
@@ -129,40 +100,14 @@ export class AccountService extends AbstractCRUD<AccountModel> {
 
     async update(data: AccountModel, req: Request): Promise<ResponseApi<AccountModel | null>> {
         const id = req.params.id;
-        const validate = new ValidateField([
-            'name',
-            'dueDate',
-            'value',
-            'installment',
-            'reference'
-        ], data, AccountEnum);
-
-        const validations = [
-            {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
-            {valid: validate.validateDate('MMMM/YYYY', data.reference), message: `Referência inválida. Use o formato "mês/ano".`},
-        ];
-        for (const v of validations) {
-            if (!v.valid) {
-                return {
-                    data: null,
-                    status: 422,
-                    message: v.message,
-                }
-            }
-        }
-        const userId = await this.getUser(req);
-
-        if (!userId) {
-            return {
-                status: 401,
-                data: null,
-                message: 'Usuário não autenticado.',
-            }
+        const dto = await this.createDto(data, req);
+        if (dto.status !== 200 || !dto.data) {
+            return dto;
         }
         try {
             const updatedAccount = await Account.findOneAndUpdate(
-                { _id: id, userId: req.userId }, 
-                data,
+                { _id: id, userId: dto.data?.userId },
+                dto.data,
                 { new: true }
             );
             return {
@@ -201,6 +146,60 @@ export class AccountService extends AbstractCRUD<AccountModel> {
                 data: false,
                 message: 'Erro interno do servidor.',
             };
+        }
+    }
+
+    private async createDto(data: AccountModel, req: Request): Promise<ResponseApi<any>> {
+        const validate = new ValidateField([
+            'name', 
+            'dueDate',
+            'value',
+            'reference',
+            'accountTypeId'
+        ], data, AccountEnum);
+        const validations = [
+            {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
+            {valid: validate.validateDate('MMMM/YYYY', data.reference), message: `Referência inválida. Use o formato "mês/ano".`},
+        ];
+
+        for (const v of validations) {
+            if (!v.valid) {
+                return {
+                    status: 422,
+                    data: null,
+                    message: v.message,
+                }
+            }
+        }
+
+        const userId = await this.getUser(req);
+        if (!userId) {
+            return {
+                status: 401,
+                data: null,
+                message: 'Usuário não autenticado.',
+            }
+        }
+
+        const accountType = await AccountType.findOne({ _id: data.accountTypeId, userId });
+        if (!accountType) {
+            return {
+                status: 404,
+                data: null,
+                message: 'Tipo de conta não encontrado.',
+            }
+        }
+        const formattedReference = moment(data.reference, 'MMMM/YYYY').format('YYYY-MM');
+        data.reference = formattedReference;
+        const newData = {
+            ...data,
+            userId,
+            accountType,
+        }
+        return {
+            data: newData,
+            status: 200,
+            message: 'Dados válidos.',
         }
     }
 

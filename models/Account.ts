@@ -8,8 +8,8 @@ const accountSchema: Schema = new Schema<AccountModel>({
     dueDate: { type: Date, required: true },
     paymentDate: { type: Date, required: true },
     reference: { type: String, required: true },
-    installment: { type: Number, required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    accountType: { type: Schema.Types.ObjectId, ref: 'AccountType', required: true },
 }, {timestamps: true});
 
 async function startServer() {

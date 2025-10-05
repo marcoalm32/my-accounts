@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import userRouter from './routes/user.route';
 import accountRouter from './routes/account.route';
+import accountTypeRouter from './routes/account-type.route';
 
 dotenv.config();
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.urlencoded({extended: true}));
 
 app.use('/api/users', userRouter);
 app.use('/api/accounts', accountRouter);
+app.use('/api/account-type', accountTypeRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
