@@ -80,17 +80,19 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
     }
 
     async findAll(req: Request): Promise<ResponseApi<AccountTypeModel[]>> {
-        const skip = parseInt(req.query.skip as string) || 0;
+        const page = parseInt(req.query.page as string) || 1;
+        const query = this.buildQueries(req.query);
         const limit = parseInt(req.query.limit as string) || 10;
         const token = getToken(req);
         const userId = await getUserById(token);
 
+        const skip = (page - 1) * limit;
         try {
-            const accountTypes = await AccountType.find({ userId })
+            const accountTypes = await AccountType.find({ userId, ...query.filter })
                 .skip(skip)
                 .limit(limit)
                 .exec();
-            const total = await AccountType.countDocuments({ userId });
+            const total = await AccountType.countDocuments({ userId, ...query.filter });
             return {
                 status: 200,
                 data: accountTypes as AccountTypeModel[],
