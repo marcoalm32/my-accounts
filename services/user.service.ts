@@ -106,7 +106,10 @@ export class UserService {
             );
 
             return {
-                data: null,
+                data: {
+                    name: user.name,
+                    email: user.email,
+                } as UserModel,
                 token,
                 status: 200,
                 message: 'Login realizado com sucesso.',

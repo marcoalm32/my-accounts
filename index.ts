@@ -15,8 +15,9 @@ app.use(express.urlencoded({extended: true}));
 
 
 app.use('/api/users', userRouter);
+app.use('/api/accounts/account-type', accountTypeRouter);
 app.use('/api/accounts', accountRouter);
-app.use('/api/account-type', accountTypeRouter);
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
