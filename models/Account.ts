@@ -6,7 +6,7 @@ const accountSchema: Schema = new Schema<AccountModel>({
     name: { type: String, required: true },
     value: { type: Number, required: true },
     dueDate: { type: Date, required: true },
-    paymentDate: { type: Date, required: true },
+    paymentDate: { type: Date },
     reference: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     accountType: { type: Schema.Types.ObjectId, ref: 'AccountType', required: true },
