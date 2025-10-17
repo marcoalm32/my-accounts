@@ -4,7 +4,6 @@ import { AccountModel } from '../types/account.model';
 import { Account } from '../models/Account';
 import { AccountEnum } from '../types/enum/account.enum';
 import { ValidateField } from '../shared/helpers/validate-field';
-import { getToken, getUserById } from '../shared/middlewares/authenticated';
 import { Request } from 'express';
 import { AccountType } from '../models/AccountType';
 import moment from 'moment';
@@ -39,8 +38,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
 
     async findById(req: Request): Promise<ResponseApi<AccountModel | null>> {
         const id = req.params.id;
-        const token = getToken(req);
-        const userId = await getUserById(token);
+        const userId = await this.getUser(req);
 
         if (!userId) {
             return {
@@ -70,8 +68,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
         const query = this.buildQueries(req.query);
-        const token = getToken(req);
-        const userId = await getUserById(token);
+        const userId = await this.getUser(req);
 
         const skip = (page - 1) * limit;
         try {
@@ -102,6 +99,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
     async update(data: AccountModel, req: Request): Promise<ResponseApi<AccountModel | null>> {
         const id = req.params.id;
         const dto = await this.createDto(data, req);
+
         if (dto.status !== 200 || !dto.data) {
             return dto;
         }
