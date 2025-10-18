@@ -76,7 +76,7 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
                 .skip(skip)
                 .limit(limit)
                 .exec();
-            const total = await Income.countDocuments({ ...query, userId: userId });
+            const total = await Income.countDocuments({ userId, ...query.filter });
             return {
                 status: 200,
                 data: incomes as IncomeModel[],
