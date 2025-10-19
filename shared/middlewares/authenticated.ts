@@ -26,7 +26,14 @@ export const getUserById = async (token: string | null): Promise<string | null> 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { id: string };
         return decoded.id;
-    } catch (error) {
+    } catch (error: any) {
+        if (error.name === 'TokenExpiredError') {
+            console.log('Token expirado em:', error.expiredAt);
+        } else if (error.name === 'JsonWebTokenError') {
+            console.log('Token inválido:', error.message);
+        } else {
+            console.log('Erro na verificação do JWT:', error);
+        }
         return null;
     }
 }
