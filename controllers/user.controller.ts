@@ -1,7 +1,6 @@
 import { UserService } from "../services/user.service";
 import { Request, Response } from "express";
 import { ResponseApi, responseApi } from "../shared/helpers/response-api";
-import { UserModel } from "../types/user.model";
 
 export class UserController {
 

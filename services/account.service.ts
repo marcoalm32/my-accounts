@@ -1,22 +1,22 @@
 import { AbstractCRUD } from '../shared/abstract/abstract-crud';
 import { ResponseApi } from '../shared/helpers/response-api';
-import { AccountModel } from '../types/account.model';
-import { Account } from '../models/Account';
+import { Account } from '../types/account';
+import { AccountModel } from '../models/Account.model';
 import { AccountEnum } from '../types/enum/account.enum';
 import { ValidateField } from '../shared/helpers/validate-field';
 import { Request } from 'express';
-import { AccountType } from '../models/AccountType';
+import { AccountTypeModel } from '../models/AccountType';
 import moment from 'moment';
 
-export class AccountService extends AbstractCRUD<AccountModel> {
+export class AccountService extends AbstractCRUD<Account> {
 
-    async create(data: AccountModel, req: Request): Promise<any> {
+    async create(data: Account, req: Request): Promise<any> {
         const dto = await this.createDto(data, req);
         if (dto.status !== 200 || !dto.data) {
             return dto;
         }
         try {
-            const newAccount = new Account({
+            const newAccount = new AccountModel({
                 ...dto.data,
                 userId: dto.data.userId,
                 accountType: dto.data.accountType,
@@ -24,7 +24,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
             const savedAccount = await newAccount.save();
             return {
                 status: 201,
-                data: savedAccount as AccountModel,
+                data: savedAccount as Account,
                 message: 'Conta criada com sucesso.',
             }
         } catch (error) {
@@ -36,7 +36,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
         }
     }
 
-    async findById(req: Request): Promise<ResponseApi<AccountModel | null>> {
+    async findById(req: Request): Promise<ResponseApi<Account | null>> {
         const id = req.params.id;
         const userId = await this.getUser(req);
 
@@ -49,10 +49,10 @@ export class AccountService extends AbstractCRUD<AccountModel> {
         }
 
         try {
-            const account = await Account.findOne({ _id: id, userId: userId });
+            const account = await AccountModel.findOne({ _id: id, userId: userId });
             return {
                 status: account ? 200 : 404,
-                data: account as AccountModel,
+                data: account as Account,
                 message: account ? 'Conta encontrada com sucesso.' : 'Conta não encontrada.',
             }
         } catch (error) {
@@ -64,7 +64,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
         }
     }
 
-    async findAll(req: Request): Promise<ResponseApi<AccountModel[]>> {
+    async findAll(req: Request): Promise<ResponseApi<Account[]>> {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
         const query = this.buildQueries(req.query);
@@ -72,15 +72,15 @@ export class AccountService extends AbstractCRUD<AccountModel> {
 
         const skip = (page - 1) * limit;
         try {
-            const accounts = await Account.find({ userId, ...query.filter })
+            const accounts = await AccountModel.find({ userId, ...query.filter })
                 .skip(skip)
                 .limit(limit)
                 .exec();
-            const total = await Account.countDocuments({ userId, ...query.filter });
+            const total = await AccountModel.countDocuments({ userId, ...query.filter });
 
             return {
                 status: 200,
-                data: accounts as AccountModel[],
+                data: accounts as Account[],
                 message: 'Contas listadas com sucesso.',
                 pagination: this.setPagination(total, limit, skip)
             }
@@ -96,7 +96,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
 
     }
 
-    async update(data: AccountModel, req: Request): Promise<ResponseApi<AccountModel | null>> {
+    async update(data: Account, req: Request): Promise<ResponseApi<Account | null>> {
         const id = req.params.id;
         const dto = await this.createDto(data, req);
 
@@ -104,14 +104,14 @@ export class AccountService extends AbstractCRUD<AccountModel> {
             return dto;
         }
         try {
-            const updatedAccount = await Account.findOneAndUpdate(
+            const updatedAccount = await AccountModel.findOneAndUpdate(
                 { _id: id, userId: dto.data?.userId },
                 dto.data,
                 { new: true }
             );
             return {
                 status: updatedAccount ? 200 : 404,
-                data: updatedAccount as AccountModel,
+                data: updatedAccount as Account,
                 message: updatedAccount ? 'Conta atualizada com sucesso.' : 'Conta não encontrada.',
             }
         } catch (error) {
@@ -133,7 +133,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
             message: 'Usuário não autenticado.',
         };
         try {
-        const result = await Account.findOneAndDelete({ _id: id, userId});
+        const result = await AccountModel.findOneAndDelete({ _id: id, userId});
             return {
                 status: result ? 200 : 404,
                 data: result ? true : false,
@@ -148,7 +148,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
         }
     }
 
-    private async createDto(data: AccountModel, req: Request): Promise<ResponseApi<any>> {
+    private async createDto(data: Account, req: Request): Promise<ResponseApi<any>> {
         const validate = new ValidateField([
             'name', 
             'dueDate',
@@ -180,7 +180,7 @@ export class AccountService extends AbstractCRUD<AccountModel> {
             }
         }
 
-        const accountType = await AccountType.findOne({ _id: data.accountTypeId, userId });
+        const accountType = await AccountTypeModel.findOne({ _id: data.accountTypeId, userId });
         if (!accountType) {
             return {
                 status: 404,

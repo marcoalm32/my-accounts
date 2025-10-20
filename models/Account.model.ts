@@ -1,8 +1,8 @@
 import mongoose, { Schema} from "mongoose";
-import { AccountModel } from '../types/account.model';
+import { Account } from '../types/account';
 import { connectDatabase } from "../db/database";
 
-const accountSchema: Schema = new Schema<AccountModel>({
+const accountSchema: Schema = new Schema<Account>({
     name: { type: String, required: true },
     value: { type: Number, required: true },
     dueDate: { type: Date, required: true },
@@ -18,4 +18,4 @@ async function startServer() {
 
 startServer();
 
-export const Account = mongoose.model<AccountModel>('Account', accountSchema);
+export const AccountModel = mongoose.model<Account>('Account', accountSchema);

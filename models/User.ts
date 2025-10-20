@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { connectDatabase } from '../db/database';
-import { UserModel } from '../types/user.model';
+import { User } from '../types/user';
 
 const UserSchema: Schema = new Schema({
     name: { type: String, required: true },
@@ -14,4 +14,4 @@ async function startServer() {
 
 startServer();
 
-export const User = mongoose.model<UserModel>('User', UserSchema);
+export const UserModel = mongoose.model<User>('User', UserSchema);

@@ -1,7 +1,7 @@
 import { ResponseApi } from "../shared/helpers/response-api";
 import { ValidateField } from "../shared/helpers/validate-field";
-import { UserModel } from "../types/user.model";
-import { User } from '../models/User';
+import { User } from "../types/user";
+import { UserModel } from '../models/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -11,7 +11,7 @@ dotenv.config();
 
 export class UserService {
 
-    async register(data: UserModel): Promise<ResponseApi<UserModel>> {
+    async register(data: User): Promise<ResponseApi<User>> {
         const validate = new ValidateField(['name', 'email', 'password', 'confirmPassword'], data, UserEnum);
         const validations = [
             {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
@@ -31,7 +31,7 @@ export class UserService {
         }
 
         const hashPassword = await bcrypt.hash(data.password, 12);
-        const existingUser = await User.findOne({ email: data.email });
+        const existingUser = await UserModel.findOne({ email: data.email });
         if (existingUser) {
             return {
                 status: 409,
@@ -47,10 +47,10 @@ export class UserService {
         }
 
         try {
-            const newUser = await User.create(user);
+            const newUser = await UserModel.create(user);
             return {
                 status: 201,
-                data: {name: newUser.name, email: newUser.email, id: newUser.id} as UserModel,
+                data: {name: newUser.name, email: newUser.email, id: newUser.id} as User,
                 message: 'Usuário criado com sucesso.',
             };
         } catch (error) {
@@ -62,7 +62,7 @@ export class UserService {
         }
     }
 
-    async login(data: UserModel): Promise<ResponseApi<UserModel>> {
+    async login(data: User): Promise<ResponseApi<User>> {
         const validate = new ValidateField(['email', 'password'], data, UserEnum);
         const validations = [
             {valid: !validate.requiredField(), message: `${validate.requiredField()} é obrigatório.`},
@@ -80,7 +80,7 @@ export class UserService {
             }
         }
 
-        const user = await User.findOne({ email: data.email });
+        const user = await UserModel.findOne({ email: data.email });
         if (!user) {
             return {
                 status: 404,
@@ -109,7 +109,7 @@ export class UserService {
                 data: {
                     name: user.name,
                     email: user.email,
-                } as UserModel,
+                } as User,
                 token,
                 status: 200,
                 message: 'Login realizado com sucesso.',

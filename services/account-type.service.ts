@@ -1,15 +1,15 @@
 import { Request } from 'express';
 import { AbstractCRUD } from '../shared/abstract/abstract-crud';
 import { ResponseApi } from '../shared/helpers/response-api';
-import { AccountTypeModel } from '../types/account-type.model';
+import { AccountType } from '../types/account-type';
 import { AccountTypeEnum } from '../types/enum/account-type.enum';
 import { ValidateField } from '../shared/helpers/validate-field';
 import { getToken, getUserById } from '../shared/middlewares/authenticated';
-import { AccountType } from '../models/AccountType';
+import { AccountTypeModel } from '../models/AccountType';
 
-export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
+export class AccountTypeService extends AbstractCRUD<AccountType> {
     
-    async create(data: AccountTypeModel, req: Request): Promise<ResponseApi<AccountTypeModel>> {
+    async create(data: AccountType, req: Request): Promise<ResponseApi<AccountType>> {
         const validate = new ValidateField(['name'], data, AccountTypeEnum);
         const missingField = validate.requiredField();
         if (missingField) {
@@ -29,14 +29,14 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
             };
         }
         try {
-            const accountType = new AccountType({
+            const accountType = new AccountTypeModel({
                 ...data,
                 userId: userId,
             });
             const newAccountType = await accountType.save();
             return {
                 status: 201,
-                data: newAccountType as AccountTypeModel,
+                data: newAccountType as AccountType,
                 message: 'Tipo de conta criada com sucesso.',
             };
 
@@ -50,7 +50,7 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
         
     }
 
-    async findById(req: Request): Promise<ResponseApi<AccountTypeModel | null>> {
+    async findById(req: Request): Promise<ResponseApi<AccountType | null>> {
         const id = req.params.id;
         const token = getToken(req);
         const userId = await getUserById(token);
@@ -64,10 +64,10 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
         }
 
         try {
-            const accountType = await AccountType.findOne({ _id: id, userId: userId });
+            const accountType = await AccountTypeModel.findOne({ _id: id, userId: userId });
             return {
                 status: accountType ? 200 : 404,
-                data: accountType as AccountTypeModel,
+                data: accountType as AccountType,
                 message: accountType ? 'Tipo de conta encontrado com sucesso.' : 'Tipo de conta não encontrado.',
             };
         } catch (error) {
@@ -79,7 +79,7 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
         }
     }
 
-    async findAll(req: Request): Promise<ResponseApi<AccountTypeModel[]>> {
+    async findAll(req: Request): Promise<ResponseApi<AccountType[]>> {
         const page = parseInt(req.query.page as string) || 1;
         const query = this.buildQueries(req.query);
         const limit = parseInt(req.query.limit as string) || 10;
@@ -88,14 +88,14 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
 
         const skip = (page - 1) * limit;
         try {
-            const accountTypes = await AccountType.find({ userId, ...query.filter })
+            const accountTypes = await AccountTypeModel.find({ userId, ...query.filter })
                 .skip(skip)
                 .limit(limit)
                 .exec();
-            const total = await AccountType.countDocuments({ userId, ...query.filter });
+            const total = await AccountTypeModel.countDocuments({ userId, ...query.filter });
             return {
                 status: 200,
-                data: accountTypes as AccountTypeModel[],
+                data: accountTypes as AccountType[],
                 message: 'Tipos de conta encontrados com sucesso.',
                 pagination: this.setPagination(total, limit, skip),
             };
@@ -108,7 +108,7 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
         }
     }
 
-    async update(data: AccountTypeModel, req: Request): Promise<ResponseApi<AccountTypeModel | null>> {
+    async update(data: AccountType, req: Request): Promise<ResponseApi<AccountType | null>> {
         const id = req.params.id;
         const validate = new ValidateField(['name'], data, AccountTypeEnum);
         if (!validate.requiredField()) {
@@ -129,7 +129,7 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
         }
 
         try {
-            const updatedAccountType = await AccountType.findOneAndUpdate(
+            const updatedAccountType = await AccountTypeModel.findOneAndUpdate(
                 { _id: id, userId },
                 { $set: data },
                 { new: true }
@@ -162,7 +162,7 @@ export class AccountTypeService extends AbstractCRUD<AccountTypeModel> {
         }
 
         try {
-            const accountType = await AccountType.findOneAndDelete({ _id: id, userId });
+            const accountType = await AccountTypeModel.findOneAndDelete({ _id: id, userId });
             return {
                 status: accountType ? 200 : 404,
                 data: accountType ? true : false,

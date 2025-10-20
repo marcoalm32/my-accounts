@@ -1,4 +1,4 @@
-export interface BalanceModel {
+export interface Balance {
     totalIncome: number;
     totalAccounts: number;
     dateTo?: Date;
