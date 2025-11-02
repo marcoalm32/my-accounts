@@ -5,6 +5,7 @@ import userRouter from './routes/user.route';
 import accountRouter from './routes/account.route';
 import accountTypeRouter from './routes/account-type.route';
 import incomeRouter from './routes/income.route';
+import balanceRouter from './routes/balance.route';
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.use('/api/users', userRouter);
 app.use('/api/accounts/account-type', accountTypeRouter);
 app.use('/api/accounts', accountRouter);
 app.use('/api/incomes', incomeRouter);
+app.use('/api/balance', balanceRouter);
 
 
 app.listen(PORT, () => {

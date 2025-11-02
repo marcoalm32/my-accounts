@@ -1,6 +1,6 @@
 import { Default } from "./default";
 
-export interface IncomeModel extends Default {
+export interface Income extends Default {
     name: string;
     receivedDate: Date;
     value: number;

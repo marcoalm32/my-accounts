@@ -1,6 +1,6 @@
 import { Default } from "./default";
 
-export interface AccountTypeModel extends Default{
+export interface AccountType extends Default{
     name: string;
     description: string;
     userId: any;

@@ -1,13 +1,13 @@
 import { Default } from "./default";
-import { AccountTypeModel } from "../types/account-type.model";
+import { AccountType } from "./account-type";
 
-export interface AccountModel extends Default {
+export interface Account extends Default {
     name: string;
     dueDate: Date;
     paymentDate: Date;
     value: number;
     reference: string;
     userId: any;
-    accountType?: AccountTypeModel;
+    accountType?: AccountType;
     accountTypeId: any;
 }

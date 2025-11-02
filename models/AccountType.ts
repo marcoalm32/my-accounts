@@ -1,8 +1,8 @@
 import { connectDatabase } from "../db/database";
 import mongoose, { Schema } from "mongoose";
-import { AccountTypeModel } from "../types/account-type.model";
+import { AccountType } from "../types/account-type";
 
-const accountTypeSchema = new Schema<AccountTypeModel>({
+const accountTypeSchema = new Schema<AccountType>({
     name: { type: String, required: true },
     description: { type: String, required: false },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -14,4 +14,4 @@ async function startServer() {
 
 startServer();
 
-export const AccountType = mongoose.model('AccountType', accountTypeSchema);
+export const AccountTypeModel = mongoose.model<AccountType>('AccountType', accountTypeSchema);

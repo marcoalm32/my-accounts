@@ -1,8 +1,8 @@
 import mongoose, { Schema} from "mongoose";
-import { IncomeModel } from "../types/income.model";
+import { Income } from "../types/income";
 import { connectDatabase } from '../db/database';
 
-const incomeSchema = new Schema<IncomeModel>({
+const incomeSchema = new Schema<Income>({
     name: { type: String, required: true },
     value: { type: Number, required: true },
     receivedDate: { type: Date, required: true },
@@ -15,4 +15,4 @@ async function startServer() {
 
 startServer();
 
-export const Income = mongoose.model<IncomeModel>('Income', incomeSchema); 
+export const IncomeModel = mongoose.model<Income>('Income', incomeSchema); 

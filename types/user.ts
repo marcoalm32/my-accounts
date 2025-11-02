@@ -1,6 +1,6 @@
 import { Default } from "./default";
 
-export interface UserModel extends Default {
+export interface User extends Default {
     name: string;
     email: string;
     password: string;

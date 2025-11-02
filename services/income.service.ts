@@ -1,14 +1,14 @@
-import {  IncomeModel} from '../types/income.model';
+import {  Income } from '../types/income';
 import { Request } from 'express';
 import { AbstractCRUD } from '../shared/abstract/abstract-crud';
 import { ResponseApi } from '../shared/helpers/response-api';
 import { ValidateField } from '../shared/helpers/validate-field';
 import { IncomeEnum } from '../types/enum/income.enum';
-import { Income } from '../models/Income';
+import { IncomeModel } from '../models/Income';
 
-export class IncomeService extends AbstractCRUD<IncomeModel> {
+export class IncomeService extends AbstractCRUD<Income> {
 
-    async create(data: IncomeModel, req: Request): Promise<ResponseApi<IncomeModel>> {
+    async create(data: Income, req: Request): Promise<ResponseApi<Income>> {
         
         const dto = await this.createDto(data, req);
         if (dto.status !== 200 || !dto.data) {
@@ -16,14 +16,14 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
         }
 
         try {
-            const newIncome = new Income({
+            const newIncome = new IncomeModel({
                 ...dto.data,
                 userId: dto.data.userId,
             });
             const savedIncome = await newIncome.save();
             return {
                 status: 201,
-                data: savedIncome as IncomeModel,
+                data: savedIncome as Income,
                 message: 'Receita criada com sucesso.',
             }
         } catch (error) {
@@ -35,7 +35,7 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
         }
     }
 
-    async findById(req: Request): Promise<ResponseApi<IncomeModel | null>> {
+    async findById(req: Request): Promise<ResponseApi<Income | null>> {
         
         const id = req.params.id;
         const userId = await this.getUser(req);
@@ -48,10 +48,10 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
         }
 
         try {
-            const income = await Income.findOne({ _id: id, userId: userId });
+            const income = await IncomeModel.findOne({ _id: id, userId: userId });
             return {
                 status: income ? 200 : 404,
-                data: income as IncomeModel,
+                data: income as Income,
                 message: income ? 'Receita encontrada com sucesso.' : 'Receita não encontrada.',
             }
         } catch (error) {
@@ -64,7 +64,7 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
 
     }
 
-    async findAll(req: Request): Promise<ResponseApi<IncomeModel[]>> {
+    async findAll(req: Request): Promise<ResponseApi<Income[]>> {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
         const query = this.buildQueries(req.query);
@@ -72,14 +72,14 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
 
         const skip = (page - 1) * limit;
         try {
-            const incomes = await Income.find({ userId, ...query.filter })
+            const incomes = await IncomeModel.find({ userId, ...query.filter })
                 .skip(skip)
                 .limit(limit)
                 .exec();
-            const total = await Income.countDocuments({ userId, ...query.filter });
+            const total = await IncomeModel.countDocuments({ userId, ...query.filter });
             return {
                 status: 200,
-                data: incomes as IncomeModel[],
+                data: incomes as Income[],
                 message: 'Receitas encontradas com sucesso.',
                 pagination: this.setPagination(total, limit, skip)
             }
@@ -93,7 +93,7 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
     }
 
 
-    async update(data: IncomeModel, req: Request): Promise<ResponseApi<IncomeModel | null>> {
+    async update(data: Income, req: Request): Promise<ResponseApi<Income | null>> {
         const id = req.params.id;
         const dto = await this.createDto(data, req);
         if (dto.status !== 200 || !dto.data) {
@@ -101,14 +101,14 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
         }
 
         try {
-            const updatedIncome = await Income.findByIdAndUpdate(
+            const updatedIncome = await IncomeModel.findByIdAndUpdate(
                 { _id: id, userId: dto.data.userId },
                 dto.data,
                 { new: true }
             );
             return {
                 status: updatedIncome ? 200 : 404,
-                data: updatedIncome as IncomeModel,
+                data: updatedIncome as Income,
                 message: updatedIncome ? 'Receita atualizada com sucesso.' : 'Receita não encontrada.',
             }
         } catch (error) {
@@ -133,7 +133,7 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
         }
 
         try {
-            const income = await Income.findOneAndDelete({ _id: id, userId: userId });
+            const income = await IncomeModel.findOneAndDelete({ _id: id, userId: userId });
             return {
                 status: income ? 200 : 404,
                 data: income ? true : false,
@@ -148,9 +148,9 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
         }
     }
 
-    private async createDto(data: IncomeModel, req: Request): Promise<ResponseApi<IncomeModel>> {
+    private async createDto(data: Income, req: Request): Promise<ResponseApi<Income>> {
 
-        const validate = new ValidateField<IncomeModel>(
+        const validate = new ValidateField<Income>(
             ['name', 'value', 'receivedDate'],
             data,
             IncomeEnum
@@ -173,7 +173,7 @@ export class IncomeService extends AbstractCRUD<IncomeModel> {
             }
         }
 
-        const newData: IncomeModel = {
+        const newData: Income = {
             ...data,
             userId: userId,
         };
