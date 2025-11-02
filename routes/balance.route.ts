@@ -9,5 +9,6 @@ const balanceController = new BalanceController(balanceService);
 
 router.get("/", isAuthenticated, (req, res) => balanceController.find(req, res));
 router.get("/latest", isAuthenticated, (req, res) => balanceController.findLatest(req, res));
+router.get("/account-balance", isAuthenticated, (req, res) => balanceController.findAccountBalance(req, res));
 
 export default router;
